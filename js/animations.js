@@ -26,8 +26,16 @@
   if(scene.effect==="debris"||scene.effect==="sign"||scene.effect==="roof"){ctx.save();ctx.translate((t*95)%(w+120)-60,h*.42);ctx.rotate(t*3);ctx.fillStyle="#a6a89e";ctx.fillRect(-13,-3,26,6);ctx.restore();}
   if(scene.effect==="tree"){ctx.save();ctx.translate(w*.48,ground+28);ctx.rotate(Math.min(1.1,(t%2)*.7));ctx.fillStyle="#4b4035";ctx.fillRect(-3,-65,6,65);ctx.restore();}
   if(scene.effect==="surge"||scene.effect==="wave"||scene.effect==="flood"){ctx.fillStyle="rgba(33,154,178,.2)";ctx.fillRect(0,ground+5,w,h-ground-5);}
-  // Chớp
-  if(scene.phase>1&&Math.sin(t*1.7)>0.985){ctx.fillStyle="rgba(205,230,245,.23)";ctx.fillRect(0,0,w,h);polygon([[w*.78,0],[w*.74,h*.18],[w*.8,h*.18],[w*.72,h*.4],[w*.84,h*.16],[w*.79,h*.16]],"#d5edf3");}
+  // Chớp thưa và ngắn: không phủ trắng toàn màn hình, tránh nhấp nháy liên tục.
+  // Một tia chớp mô phỏng xuất hiện khoảng mỗi 13,5 giây ở các giai đoạn bão mạnh.
+  const lightningBeat=t%13.5;
+  if(scene.phase>1&&lightningBeat<.16){
+    const pulse=Math.sin((lightningBeat/.16)*Math.PI);
+    ctx.save();
+    ctx.globalAlpha=.18*pulse;
+    polygon([[w*.78,0],[w*.75,h*.16],[w*.8,h*.16],[w*.73,h*.36],[w*.84,h*.15],[w*.79,h*.15]],"#d5edf3");
+    ctx.restore();
+  }
   // Sương mưa
   const fog=ctx.createLinearGradient(0,ground-25,0,h);fog.addColorStop(0,"rgba(150,188,199,0)");fog.addColorStop(1,"rgba(133,178,194,.15)");ctx.fillStyle=fog;ctx.fillRect(0,ground-25,w,h-ground+25);
  }

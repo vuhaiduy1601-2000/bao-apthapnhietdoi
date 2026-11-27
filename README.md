@@ -47,8 +47,14 @@ Mở `js/scenarios.js`. Mỗi level có `name`, `place`, `weather`, `desc`, và 
 - `why`: giải thích kết quả.
 - `effect`: một trong các hiệu ứng `safe`, `rain`, `wave`, `lightning`, `wind`, `debris`, `flood`, `roof`, `tree`, `spark`, `surge`, `sign`, `glass`.
 
-Mỗi màn hiện có 3 tình huống. Khi thêm level mới, cập nhật các giới hạn 5 màn trong `js/game.js` (mảng cường độ thời tiết và điều kiện hoàn thành) và nhãn `1/5` trong giao diện.
+Mỗi màn hiện có 3 tình huống. Thứ tự 4 đáp án được xáo trộn ngẫu nhiên mỗi lần vào tình huống; đáp án đúng không được đánh dấu trước trên giao diện. Khi thêm level mới, cập nhật các giới hạn 5 màn trong `js/game.js` (mảng cường độ thời tiết và điều kiện hoàn thành) và nhãn `1/5` trong giao diện.
 
 ## Lưu ý an toàn và độ chính xác
 
 Đây là mô phỏng giáo dục, không phải công cụ dự báo, cảnh báo hay hướng dẫn cứu hộ chuyên nghiệp. Nội dung dùng khuyến nghị an toàn phổ quát và định tính; không giả lập số liệu khí tượng, đường đi bão, tốc độ gió hoặc sự kiện có thật. Trong tình huống thực tế, hãy tuân thủ hướng dẫn của cơ quan chức năng và thông tin khí tượng thủy văn chính thức.
+
+## Bản cập nhật V1.1
+
+- Giảm mạnh tần suất hiệu ứng chớp: chỉ xuất hiện thưa, ngắn và không còn phủ sáng trắng toàn màn hình.
+- Xáo trộn vị trí các phương án mỗi lần vào tình huống; đáp án đúng/sai vẫn gắn với nội dung tương ứng, không bị sai logic khi đảo thứ tự.
+- Giao diện không hiển thị dấu hiệu tiết lộ đáp án đúng trước khi người chơi chọn.

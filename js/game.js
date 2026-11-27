@@ -1,7 +1,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  let level=0,sceneIndex=0,score=0,lives=3,timeLeft=20,timer=null,paused=false,locked=false,selected=0,mode="menu",best=Number(localStorage.getItem("vss_best")||0),unlocked=Math.max(1,Number(localStorage.getItem("vss_unlocked")||1));
- let consequence="";
+ let consequence="",currentChoices=[];
  const levels=window.STORM_LEVELS;
  const effectMap={safe:{wind:1,rain:1,phase:0},rain:{wind:1.5,rain:2,phase:1},wave:{wind:2.4,rain:2.2,phase:3},lightning:{wind:2,rain:2.4,phase:3},wind:{wind:3,rain:2.5,phase:3},debris:{wind:3.5,rain:2.8,phase:4},flood:{wind:2,rain:3,phase:3},roof:{wind:4,rain:3,phase:4},tree:{wind:3.8,rain:2.5,phase:4},spark:{wind:1.8,rain:1.8,phase:3},surge:{wind:4,rain:3,phase:4},sign:{wind:4,rain:2.5,phase:4},glass:{wind:4,rain:2.8,phase:4}};
  function show(id){["menuScreen","levelsScreen","gameScreen"].forEach(x=>$(x).classList.toggle("hidden",x!==id));}
@@ -9,11 +9,15 @@
  function renderLevels(){ $("levelGrid").innerHTML="";levels.forEach((l,i)=>{const card=document.createElement("article");card.className="level-card"+(i>=unlocked?" locked":"");card.innerHTML=`<div><div class="level-num">0${i+1}</div><h3>${l.name}</h3><p>${l.desc}</p></div><button ${i>=unlocked?"disabled":""}>${i>=unlocked?"🔒 CHƯA MỞ KHÓA":"VÀO MÀN →"}</button>`;card.querySelector("button").addEventListener("click",()=>startLevel(i));$("levelGrid").appendChild(card);});}
  function startLevel(i){level=i;sceneIndex=0;score=0;lives=3;paused=false;locked=false;mode="playing";$("pauseOverlay").classList.add("hidden");$("resultOverlay").classList.add("hidden");show("gameScreen");loadScene();window.StormSound.init();window.StormSound.wind(true,1); }
  function loadScene(){locked=false;selected=0;timeLeft=20;const l=levels[level],s=l.scenes[sceneIndex];$("levelChip").textContent="MÀN "+(level+1);$("stageName").textContent=l.name;$("locationText").textContent=l.place;$("weatherLabel").textContent=l.weather;$("scenarioNumber").textContent=String(sceneIndex+1).padStart(2,"0");$("questionTitle").textContent=s.title;$("questionText").textContent=s.text;$("riskTag").textContent=s.risk;$("scoreValue").textContent=String(score).padStart(4,"0");$("livesValue").textContent="♥ ".repeat(lives).trim();$("progressText").textContent=String(sceneIndex+1).padStart(2,"0")+" / "+String(l.scenes.length).padStart(2,"0");$("progressBar").style.width=((sceneIndex/l.scenes.length)*100)+"%";
-  const list=$("choiceList");list.innerHTML="";s.choices.forEach((c,i)=>{const b=document.createElement("button");b.className="choice-btn"+(i===selected?" selected":"");b.innerHTML=`<span class="choice-key">${String.fromCharCode(65+i)}</span><span>${c.text}</span>`;b.addEventListener("click",()=>choose(i));list.appendChild(b)});updateTimer();clearInterval(timer);timer=setInterval(()=>{if(paused||locked)return;timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timer);fail(null,true)}},1000);
+  // Xáo trộn thứ tự đáp án mỗi lần vào tình huống; trạng thái đúng/sai
+  // đi theo từng đáp án nên không bị thay đổi khi đảo vị trí.
+  currentChoices=s.choices.slice();
+  for(let i=currentChoices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[currentChoices[i],currentChoices[j]]=[currentChoices[j],currentChoices[i]];}
+  const list=$("choiceList");list.innerHTML="";currentChoices.forEach((c,i)=>{const b=document.createElement("button");b.className="choice-btn"+(i===selected?" selected":"");b.innerHTML=`<span class="choice-key">${String.fromCharCode(65+i)}</span><span>${c.text}</span>`;b.addEventListener("click",()=>choose(i));list.appendChild(b)});updateTimer();clearInterval(timer);timer=setInterval(()=>{if(paused||locked)return;timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timer);fail(null,true)}},1000);
   const intensity=[1.1,1.7,2.5,3.5,1.4][level];window.StormVisual.setScene({wind:intensity,rain:[.7,1.5,2.1,2.7,1.1][level],phase:level,effect:"safe"});window.StormSound.wind(true,intensity);
  }
  function updateTimer(){$("timerValue").textContent=timeLeft;$("timerValue").style.color=timeLeft<=5?"#ff626b":"";}
- function choose(i){if(locked||paused)return;window.StormSound.init();const s=levels[level].scenes[sceneIndex],c=s.choices[i];if(!c)return;locked=true;clearInterval(timer);$("choiceList").querySelectorAll("button").forEach(b=>b.disabled=true);
+ function choose(i){if(locked||paused)return;window.StormSound.init();const s=levels[level].scenes[sceneIndex],c=currentChoices[i];if(!c)return;locked=true;clearInterval(timer);$("choiceList").querySelectorAll("button").forEach(b=>b.disabled=true);
   if(c.ok){score+=100+timeLeft*3; $("scoreValue").textContent=String(score).padStart(4,"0");$("sceneToast").textContent="✓ SUCCESS";$("sceneToast").className="scene-toast success";window.StormSound.success();window.StormVisual.setScene({effect:"safe"});consequence="Bạn đã chọn phương án an toàn. "+c.why;setTimeout(()=>{ $("sceneToast").classList.add("hidden");nextScene();},1250);}
   else{lives--; $("livesValue").textContent="♥ ".repeat(lives).trim()||"—";fail(c,false);}
  }
